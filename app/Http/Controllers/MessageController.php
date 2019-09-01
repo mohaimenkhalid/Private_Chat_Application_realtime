@@ -3,18 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Message;
+use App\User;
 use Illuminate\Http\Request;
 
 class MessageController extends Controller
 {
+
+    
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function user_list()
     {
-        //
+        $user_list = User::all();
+        return response()->json($user_list, 200);
     }
 
     /**

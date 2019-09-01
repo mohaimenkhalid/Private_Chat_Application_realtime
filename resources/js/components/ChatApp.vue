@@ -30,17 +30,17 @@
         </div>
         <div id="search">
             <label for=""><i class="fa fa-search" aria-hidden="true"></i></label>
-            <input type="text" placeholder="Search contacts..." />
+            <input type="text" placeholder="Search contacts..." v-model="searchuser"/>
         </div>
         <div id="contacts">
             <ul>
                
-                <li class="contact">
+                <li class="contact" v-for="userLists in filtersearch">
                     <div class="wrap">
                         <span class="contact-status busy"></span>
                         <img src="images/to.png" alt="" />
                         <div class="meta">
-                            <p class="name">Harvey Specter</p>
+                            <p class="name">{{ userLists.name }}</p>
                             <p class="preview">Wrong. You take the gun, or you pull out a bigger one. Or, you call their bluff. Or, you do any one of a hundred and forty six other things.</p>
                         </div>
                     </div>
@@ -117,6 +117,42 @@
 
 <script>
 	export default{
+
+        name: 'ChatApp',
+        data(){
+            return{
+
+                searchuser: ""
+
+            }
+        },
+
+        mounted(){
+
+            this.$store.dispatch('userList');
+
+        },
+
+        computed:{
+
+            userList(){
+                return this.$store.getters.getUserLIst;
+            },
+
+            filtersearch(){
+               return this.userList.filter(user=>{
+                  return user.name.match(this.searchuser);
+                });
+      }
+        },
+
+        created(){
+
+        },
+
+        methods:{
+
+        }
 
 	}
 </script>
