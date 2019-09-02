@@ -19,4 +19,3 @@
 */
 
 
-Route::get('/userlist', 'MessageController@user_list')->name('userlist');

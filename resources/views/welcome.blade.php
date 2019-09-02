@@ -81,13 +81,13 @@
 
             <div class="content">
                 <div class="title m-b-md">
-                    Online Chat
+                    Online Chat Application
                 </div>
 
 
 
                 <div class="links">
-                    Stay Close
+                    Just Registration and start Chat
                 </div>
             </div>
         </div>
