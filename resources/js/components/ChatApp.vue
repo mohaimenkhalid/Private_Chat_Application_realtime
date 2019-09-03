@@ -105,6 +105,12 @@
 
         mounted(){
 
+            Echo.private(`chat.${authuser.id}`)
+                .listen('MessageSend', (e) => {
+                   /*this.selectUser(e.message.from);*/
+                    console.log("OK");
+                });
+
 
             this.$store.dispatch('userList');
 

@@ -58,7 +58,7 @@ class MessageController extends Controller
     {
         if ($request->ajax()) {
 
-             $message = Message::create([
+        $message = Message::create([
             'message' => $request->message,
             'from' => auth()->user()->id,
             'to' => $request->user_id,
@@ -72,7 +72,7 @@ class MessageController extends Controller
             'type' => 1
         ]);
 
-       /* broadcast(new MessageSend($message));*/
+        broadcast(new MessageSend($message));
 
         return response()->json($message, 201);
             

@@ -12,6 +12,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
 class MessageSend implements ShouldBroadcast
 {
+
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $message;
@@ -23,7 +24,6 @@ class MessageSend implements ShouldBroadcast
     public function __construct($message)
     {
         $this->message = $message;
-        
     }
 
     /**
@@ -33,6 +33,6 @@ class MessageSend implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new PrivateChannel('chat'. $this->message->to);
+        return new PrivateChannel('chat.'.$this->message->to);
     }
 }
