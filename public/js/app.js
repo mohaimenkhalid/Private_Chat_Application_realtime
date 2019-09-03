@@ -1793,7 +1793,8 @@ __webpack_require__.r(__webpack_exports__);
   name: 'ChatApp',
   data: function data() {
     return {
-      searchuser: ""
+      searchuser: "",
+      message: ""
     };
   },
   mounted: function mounted() {
@@ -1818,6 +1819,20 @@ __webpack_require__.r(__webpack_exports__);
   methods: {
     selectUser: function selectUser(userid) {
       this.$store.dispatch('userMessage', userid);
+    },
+    sendMessage: function sendMessage() {
+      var _this2 = this;
+
+      /* e.preventDefault();*/
+      if (this.message != '') {
+        axios.post('/sendmessage', {
+          message: this.message,
+          user_id: this.userMessage.user.id
+        }).then(function (response) {
+          _this2.selectUser(_this2.userMessage.user.id);
+        });
+        this.message = "";
+      }
     }
   }
 });
@@ -54737,6 +54752,82 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 
 /***/ }),
 
+/***/ "./node_modules/vue-chat-scroll/dist/vue-chat-scroll.js":
+/*!**************************************************************!*\
+  !*** ./node_modules/vue-chat-scroll/dist/vue-chat-scroll.js ***!
+  \**************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+(function (global, factory) {
+	 true ? module.exports = factory() :
+	undefined;
+}(this, (function () { 'use strict';
+
+/**
+* @name VueJS vChatScroll (vue-chat-scroll)
+* @description Monitors an element and scrolls to the bottom if a new child is added
+* @author Theodore Messinezis <theo@theomessin.com>
+* @file v-chat-scroll  directive definition
+*/
+
+var scrollToBottom = function scrollToBottom(el, smooth) {
+  if (typeof el.scroll === "function") {
+    el.scroll({
+      top: el.scrollHeight,
+      behavior: smooth ? 'smooth' : 'instant'
+    });
+  } else {
+    el.scrollTop = el.scrollHeight;
+  }
+};
+
+var vChatScroll = {
+  bind: function bind(el, binding) {
+    var scrolled = false;
+
+    el.addEventListener('scroll', function (e) {
+      scrolled = el.scrollTop + el.clientHeight + 1 < el.scrollHeight;
+    });
+
+    new MutationObserver(function (e) {
+      var config = binding.value || {};
+      var pause = config.always === false && scrolled;
+      if (config.scrollonremoved) {
+        if (pause || e[e.length - 1].addedNodes.length != 1 && e[e.length - 1].removedNodes.length != 1) return;
+      } else {
+        if (pause || e[e.length - 1].addedNodes.length != 1) return;
+      }
+      scrollToBottom(el, config.smooth);
+    }).observe(el, { childList: true, subtree: true });
+  },
+  inserted: scrollToBottom
+};
+
+/**
+* @name VueJS vChatScroll (vue-chat-scroll)
+* @description Monitors an element and scrolls to the bottom if a new child is added
+* @author Theodore Messinezis <theo@theomessin.com>
+* @file vue-chat-scroll plugin definition
+*/
+
+var VueChatScroll = {
+  install: function install(Vue, options) {
+    Vue.directive('chat-scroll', vChatScroll);
+  }
+};
+
+if (typeof window !== 'undefined' && window.Vue) {
+  window.Vue.use(VueChatScroll);
+}
+
+return VueChatScroll;
+
+})));
+
+
+/***/ }),
+
 /***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/ChatApp.vue?vue&type=template&id=1da0bc8e&":
 /*!**********************************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/ChatApp.vue?vue&type=template&id=1da0bc8e& ***!
@@ -54838,49 +54929,107 @@ var render = function() {
               _vm._m(3)
             ]),
             _vm._v(" "),
-            _c("div", { staticClass: "messages" }, [
-              _c(
-                "ul",
-                _vm._l(_vm.userMessage.message, function(message) {
-                  return _c(
-                    "li",
-                    {
-                      class:
-                        "" +
-                        (message.user.id == _vm.userMessage.user.id
-                          ? "sent"
-                          : "replies")
+            _c(
+              "div",
+              {
+                directives: [
+                  {
+                    name: "chat-scroll",
+                    rawName: "v-chat-scroll",
+                    value: {
+                      always: false,
+                      smooth: true,
+                      scrollonremoved: true
                     },
-                    [
-                      _c("img", {
-                        attrs: {
-                          src:
-                            "" +
-                            (message.user.id == _vm.userMessage.user.id
-                              ? "images/to.png"
-                              : "images/from.png"),
-                          alt: "",
-                          title: message.user.name
-                        }
-                      }),
-                      _vm._v(" "),
-                      _c(
-                        "p",
-                        {
+                    expression:
+                      "{always: false, smooth: true, scrollonremoved:true}"
+                  }
+                ],
+                staticClass: "messages"
+              },
+              [
+                _c(
+                  "ul",
+                  _vm._l(_vm.userMessage.message, function(message) {
+                    return _c(
+                      "li",
+                      {
+                        class:
+                          "" +
+                          (message.user.id == _vm.userMessage.user.id
+                            ? "sent"
+                            : "replies")
+                      },
+                      [
+                        _c("img", {
                           attrs: {
-                            title: _vm._f("timeformate")(message.created_at)
+                            src:
+                              "" +
+                              (message.user.id == _vm.userMessage.user.id
+                                ? "images/to.png"
+                                : "images/from.png"),
+                            alt: "",
+                            title: message.user.name
                           }
-                        },
-                        [_vm._v(_vm._s(message.message))]
-                      )
-                    ]
-                  )
-                }),
-                0
-              )
-            ]),
+                        }),
+                        _vm._v(" "),
+                        _c(
+                          "p",
+                          {
+                            attrs: {
+                              title: _vm._f("timeformate")(message.created_at)
+                            }
+                          },
+                          [_vm._v(_vm._s(message.message))]
+                        )
+                      ]
+                    )
+                  }),
+                  0
+                )
+              ]
+            ),
             _vm._v(" "),
-            _vm._m(4)
+            _c("div", { staticClass: "message-input" }, [
+              _c("div", { staticClass: "wrap" }, [
+                _c("input", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.message,
+                      expression: "message"
+                    }
+                  ],
+                  attrs: { type: "text", placeholder: "Write your message..." },
+                  domProps: { value: _vm.message },
+                  on: {
+                    keydown: function($event) {
+                      if (
+                        !$event.type.indexOf("key") &&
+                        _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")
+                      ) {
+                        return null
+                      }
+                      return _vm.sendMessage($event)
+                    },
+                    input: function($event) {
+                      if ($event.target.composing) {
+                        return
+                      }
+                      _vm.message = $event.target.value
+                    }
+                  }
+                }),
+                _vm._v(" "),
+                _c("i", {
+                  staticClass: "fa fa-paperclip attachment",
+                  attrs: { "aria-hidden": "true" }
+                }),
+                _vm._v(" "),
+                _vm._m(4)
+              ])
+            ])
           ])
         ])
       ])
@@ -55032,24 +55181,11 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "message-input" }, [
-      _c("div", { staticClass: "wrap" }, [
-        _c("input", {
-          attrs: { type: "text", placeholder: "Write your message..." }
-        }),
-        _vm._v(" "),
-        _c("i", {
-          staticClass: "fa fa-paperclip attachment",
-          attrs: { "aria-hidden": "true" }
-        }),
-        _vm._v(" "),
-        _c("button", { staticClass: "submit" }, [
-          _c("i", {
-            staticClass: "fa fa-paper-plane",
-            attrs: { "aria-hidden": "true" }
-          })
-        ])
-      ])
+    return _c("button", { staticClass: "submit" }, [
+      _c("i", {
+        staticClass: "fa fa-paper-plane",
+        attrs: { "aria-hidden": "true" }
+      })
     ])
   }
 ]
@@ -68263,6 +68399,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _store_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./store/index */ "./resources/js/store/index.js");
 /* harmony import */ var _filter__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./filter */ "./resources/js/filter.js");
 /* harmony import */ var _filter__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_filter__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var vue_chat_scroll__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! vue-chat-scroll */ "./node_modules/vue-chat-scroll/dist/vue-chat-scroll.js");
+/* harmony import */ var vue_chat_scroll__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(vue_chat_scroll__WEBPACK_IMPORTED_MODULE_3__);
 __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 
 window.Vue = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.js");
@@ -68272,6 +68410,8 @@ window.Vue = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.
 Vue.use(vuex__WEBPACK_IMPORTED_MODULE_0__["default"]);
 var store = new vuex__WEBPACK_IMPORTED_MODULE_0__["default"].Store(_store_index__WEBPACK_IMPORTED_MODULE_1__["default"]);
 Vue.component('main-app', __webpack_require__(/*! ./components/MainApp.vue */ "./resources/js/components/MainApp.vue")["default"]);
+
+Vue.use(vue_chat_scroll__WEBPACK_IMPORTED_MODULE_3___default.a);
 var app = new Vue({
   el: '#app',
   store: store
@@ -68326,14 +68466,25 @@ if (token) {
  * for events that are broadcast by Laravel. Echo and event broadcasting
  * allows your team to easily build robust real-time web applications.
  */
-// import Echo from 'laravel-echo'
-// window.Pusher = require('pusher-js');
-// window.Echo = new Echo({
-//     broadcaster: 'pusher',
-//     key: process.env.MIX_PUSHER_APP_KEY,
-//     cluster: process.env.MIX_PUSHER_APP_CLUSTER,
-//     encrypted: true
-// });
+
+/*
+import Echo from 'laravel-echo'
+
+window.Pusher = require('pusher-js');
+
+window.Echo = new Echo({
+     "authEndpoint": "/private_chat/broadcasting/auth",
+    broadcaster: 'pusher',
+    key: process.env.MIX_PUSHER_APP_KEY,
+    cluster: process.env.MIX_PUSHER_APP_CLUSTER,
+    encrypted: false,
+    wsHost: window.location.hostname,
+    wsPort: 6001,
+    disableStats: false,
+    enableTransports: ['ws', 'wss'],
+});
+
+*/
 
 /***/ }),
 

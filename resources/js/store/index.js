@@ -3,6 +3,7 @@ export default{
 	state: {
 	    userList: [],
 	    usermessage: [],
+	   
 	  },
 
 	getters:{

@@ -63,8 +63,8 @@
                  <i class="fa fa-instagram" aria-hidden="true"></i>
             </div>
         </div>
-        <div class="messages">
-            <ul>    <!-- sent/replies -->
+        <div class="messages" v-chat-scroll="{always: false, smooth: true, scrollonremoved:true}" >
+            <ul >    <!-- sent/replies -->
                 <li :class="`${message.user.id == userMessage.user.id ? 'sent' : 'replies'}`" v-for="message in userMessage.message">
                     <img :src="`${message.user.id == userMessage.user.id ? 'images/to.png' : 'images/from.png'}`" alt="" :title="message.user.name " />
                     <p :title="message.created_at | timeformate">{{ message.message}}</p>
@@ -76,7 +76,7 @@
         </div>
         <div class="message-input">
             <div class="wrap">
-            <input type="text" placeholder="Write your message..." />
+            <input  @keydown.enter="sendMessage" v-model="message" type="text" placeholder="Write your message..." />
             <i class="fa fa-paperclip attachment" aria-hidden="true"></i>
             <button class="submit"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
             </div>
@@ -97,12 +97,14 @@
         data(){
             return{
 
-                searchuser: ""
+                searchuser: "",
+                message: ""
 
             }
         },
 
         mounted(){
+
 
             this.$store.dispatch('userList');
 
@@ -135,6 +137,18 @@
             selectUser(userid){
                 this.$store.dispatch('userMessage', userid);
 
+            },
+
+            sendMessage(){
+               /* e.preventDefault();*/
+
+                if (this.message != '') {
+                    axios.post('/sendmessage', {message: this.message, user_id: this.userMessage.user.id})
+                    .then(response=>{
+                        this.selectUser(this.userMessage.user.id);
+                    })
+                    this.message = "";
+                }
             }
 
         }

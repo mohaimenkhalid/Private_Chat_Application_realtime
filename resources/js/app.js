@@ -11,6 +11,9 @@ const store = new Vuex.Store(Store)
 
 Vue.component('main-app', require('./components/MainApp.vue').default);
 
+import VueChatScroll from 'vue-chat-scroll'
+Vue.use(VueChatScroll)
+
 
 const app = new Vue({
     el: '#app',
