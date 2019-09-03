@@ -1798,9 +1798,12 @@ __webpack_require__.r(__webpack_exports__);
     };
   },
   mounted: function mounted() {
+    var _this = this;
+
     Echo["private"]("chat.".concat(authuser.id)).listen('MessageSend', function (e) {
-      /*this.selectUser(e.message.from);*/
-      console.log("OK");
+      _this.selectUser(e.message.from);
+      /*console.log(e.message.message);*/
+
     });
     this.$store.dispatch('userList');
   },
@@ -1809,10 +1812,10 @@ __webpack_require__.r(__webpack_exports__);
       return this.$store.getters.getUserLIst;
     },
     filtersearch: function filtersearch() {
-      var _this = this;
+      var _this2 = this;
 
       return this.userList.filter(function (user) {
-        return user.name.match(_this.searchuser);
+        return user.name.match(_this2.searchuser);
       });
     },
     userMessage: function userMessage() {
@@ -1825,7 +1828,7 @@ __webpack_require__.r(__webpack_exports__);
       this.$store.dispatch('userMessage', userid);
     },
     sendMessage: function sendMessage() {
-      var _this2 = this;
+      var _this3 = this;
 
       /* e.preventDefault();*/
       if (this.message != '') {
@@ -1833,7 +1836,7 @@ __webpack_require__.r(__webpack_exports__);
           message: this.message,
           user_id: this.userMessage.user.id
         }).then(function (response) {
-          _this2.selectUser(_this2.userMessage.user.id);
+          _this3.selectUser(_this3.userMessage.user.id);
         });
         this.message = "";
       }

@@ -107,8 +107,8 @@
 
             Echo.private(`chat.${authuser.id}`)
                 .listen('MessageSend', (e) => {
-                   /*this.selectUser(e.message.from);*/
-                    console.log("OK");
+                   this.selectUser(e.message.from);
+                    /*console.log(e.message.message);*/
                 });
 
 
@@ -120,6 +120,7 @@
 
             userList(){
                 return this.$store.getters.getUserLIst;
+
             },
 
             filtersearch(){

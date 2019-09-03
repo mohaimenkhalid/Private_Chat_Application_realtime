@@ -35,4 +35,7 @@ class MessageSend implements ShouldBroadcast
     {
         return new PrivateChannel('chat.'.$this->message->to);
     }
+
+
+    
 }
