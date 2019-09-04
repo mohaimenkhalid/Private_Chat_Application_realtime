@@ -1697,6 +1697,8 @@ module.exports = {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_0__);
 //
 //
 //
@@ -1792,6 +1794,11 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: 'ChatApp',
   data: function data() {
@@ -1799,12 +1806,16 @@ __webpack_require__.r(__webpack_exports__);
       searchuser: "",
       message: "",
       authuser: "",
-      typing: ''
+      typing: '',
+      users: [],
+      online: '',
+      offline: ''
     };
   },
   mounted: function mounted() {
     var _this = this;
 
+    this.firstselectuser();
     this.authuser = authuser; //this auth user from app.blade,php
 
     Echo["private"]("chat.".concat(authuser.id)).listen('MessageSend', function (e) {
@@ -1822,8 +1833,16 @@ __webpack_require__.r(__webpack_exports__);
           }, 2000);
         }
     });
+    Echo.join('liveuser').here(function (users) {
+      _this.users = users;
+    }).joining(function (user) {
+      _this.online = user;
+    }).leaving(function (user) {
+      _this.offline = user;
+    });
     this.$store.dispatch('userList');
   },
+  created: function created() {},
   computed: {
     userList: function userList() {
       return this.$store.getters.getUserLIst;
@@ -1839,13 +1858,19 @@ __webpack_require__.r(__webpack_exports__);
       return this.$store.getters.userMessage;
     }
   },
-  created: function created() {},
   methods: {
+    firstselectuser: function firstselectuser() {
+      var _this3 = this;
+
+      axios.get('/lastuserlist').then(function (response) {
+        _this3.$store.dispatch('userMessage', response.data.id);
+      });
+    },
     selectUser: function selectUser(userid) {
       this.$store.dispatch('userMessage', userid);
     },
     sendMessage: function sendMessage() {
-      var _this3 = this;
+      var _this4 = this;
 
       /* e.preventDefault();*/
       if (this.message != '') {
@@ -1853,7 +1878,7 @@ __webpack_require__.r(__webpack_exports__);
           message: this.message,
           user_id: this.userMessage.user.id
         }).then(function (response) {
-          _this3.selectUser(_this3.userMessage.user.id);
+          _this4.selectUser(_this4.userMessage.user.id);
         });
         this.message = "";
       }
@@ -1865,6 +1890,11 @@ __webpack_require__.r(__webpack_exports__);
         'typing': this.message,
         'userId': userId //who reciev msg 
 
+      });
+    },
+    onlineUser: function onlineUser(userid) {
+      return lodash__WEBPACK_IMPORTED_MODULE_0___default.a.find(this.users, {
+        'id': userid
       });
     }
   }
@@ -65215,7 +65245,11 @@ var render = function() {
                     },
                     [
                       _c("div", { staticClass: "wrap" }, [
-                        _c("span", { staticClass: "contact-status busy" }),
+                        _vm.onlineUser(user.id) || _vm.online.id == user.id
+                          ? _c("span", { staticClass: "contact-status online" })
+                          : _c("span", {
+                              staticClass: "contact-status offline"
+                            }),
                         _vm._v(" "),
                         _c("img", { attrs: { src: "images/to.png", alt: "" } }),
                         _vm._v(" "),
@@ -65324,8 +65358,10 @@ var render = function() {
                       }
                     },
                     [
-                      _vm._m(5),
-                      _c("span", [_vm._v(_vm._s(_vm.typing) + " is typing...")])
+                      _c("span", [
+                        _vm._v(_vm._s(_vm.typing) + " is typing"),
+                        _vm._m(5)
+                      ])
                     ]
                   )
                 : _vm._e(),
@@ -65387,7 +65423,7 @@ var render = function() {
                       attrs: {
                         type: "text",
                         disabled: "",
-                        placeholder: "Select a user..."
+                        placeholder: "Select a User..."
                       },
                       domProps: { value: _vm.message },
                       on: {

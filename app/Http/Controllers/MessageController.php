@@ -25,6 +25,12 @@ class MessageController extends Controller
         
     }
 
+    public function lastuser(){
+
+        $last_user_list = User::orderBy('id', 'DESC')->first();
+        return response()->json($last_user_list);
+    }
+
 
     public function user_message($id=null)
     {

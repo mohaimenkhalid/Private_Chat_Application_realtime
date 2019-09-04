@@ -37,7 +37,11 @@
                
                 <li class="contact" v-for="user in filtersearch" @click.prevent="selectUser(user.id)">
                     <div class="wrap">
-                        <span class="contact-status busy"></span>
+
+                        <span class="contact-status online" v-if="onlineUser(user.id) || online.id == user.id"></span>
+                        <!-- <span class="contact-status offline" v-if="offline.id == user.id"></span> -->
+                        <span class="contact-status offline" v-else></span>
+
                         <img src="images/to.png" alt="" />
                         <div class="meta">
                             <p class="name">{{ user.name }}</p>
@@ -75,10 +79,10 @@
             </ul>
         </div>
         <div class="message-input">
-            <p style="text-align: center; margin-bottom: 15px" v-if="typing"><span><img width="25" src="images/typing.gif"></span><span>{{ typing }} is typing...</span></p>
+            <p style="text-align: center; margin-bottom: 15px" v-if="typing"><span>{{ typing }} is typing<span><img width="25" src="images/typing.gif"></span></span></p>
             <div class="wrap">
             <input v-if="userMessage.user"  @keydown.enter="sendMessage" @keydown="typingEvent(userMessage.user)" v-model="message" type="text" placeholder="Write your message..." />
-            <input v-else @keydown.enter="sendMessage" v-model="message" type="text" disabled="" placeholder="Select a user..." />
+            <input v-else @keydown.enter="sendMessage" v-model="message" type="text" disabled="" placeholder="Select a User..." />
             
             <i class="fa fa-paperclip attachment" aria-hidden="true"></i>
             <button class="submit" @click.prevent="sendMessage"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
@@ -94,6 +98,9 @@
 </template>
 
 <script>
+
+    import _ from 'lodash'
+
 	export default{
 
         name: 'ChatApp',
@@ -104,11 +111,16 @@
                 message: "",
                 authuser: "",
                 typing: '',
+                users: [],
+                online: '',
+                offline: ''
 
             }
         },
 
         mounted(){
+
+            this.firstselectuser();
 
             this.authuser = authuser;  //this auth user from app.blade,php
 
@@ -135,10 +147,26 @@
             });
 
 
+             Echo.join('liveuser')
+                .here((users) => {
+                    this.users = users;
+                })
+                .joining((user) => {
+                    this.online = user;
+                })
+                .leaving((user) => {
+                    this.offline = user;
+                });
+
 
 
             this.$store.dispatch('userList');
 
+        },
+
+        created(){
+
+           
         },
 
         computed:{
@@ -160,11 +188,15 @@
 
           },
 
-        created(){
-
-        },
-
         methods:{
+
+            firstselectuser(){
+                axios.get('/lastuserlist')
+                .then(response=>{
+                    this.$store.dispatch('userMessage', response.data.id);
+                })
+                
+            },
 
             selectUser(userid){
                 this.$store.dispatch('userMessage', userid);
@@ -192,6 +224,10 @@
                     'userId' : userId //who reciev msg 
 
                 });
+            },
+
+            onlineUser(userid){
+                return _.find(this.users, {'id': userid });
             }
 
         }
