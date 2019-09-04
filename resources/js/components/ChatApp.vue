@@ -8,7 +8,7 @@
         <div id="profile">
             <div class="wrap">
                 <img id="profile-img" src="images/from.png" class="online" alt="" />
-                <p>Mike Ross</p>
+                <p>{{ authuser.name }}</p>
                 <i class="fa fa-chevron-down expand-button" aria-hidden="true"></i>
                 <div id="status-options">
                     <ul>
@@ -75,10 +75,13 @@
             </ul>
         </div>
         <div class="message-input">
+            <p style="text-align: center; margin-bottom: 15px" v-if="typing"><span><img width="25" src="images/typing.gif"></span><span>{{ typing }} is typing...</span></p>
             <div class="wrap">
-            <input  @keydown.enter="sendMessage" v-model="message" type="text" placeholder="Write your message..." />
+            <input v-if="userMessage.user"  @keydown.enter="sendMessage" @keydown="typingEvent(userMessage.user)" v-model="message" type="text" placeholder="Write your message..." />
+            <input v-else @keydown.enter="sendMessage" v-model="message" type="text" disabled="" placeholder="Select a user..." />
+            
             <i class="fa fa-paperclip attachment" aria-hidden="true"></i>
-            <button class="submit"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
+            <button class="submit" @click.prevent="sendMessage"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
             </div>
         </div>
     </div>
@@ -98,18 +101,40 @@
             return{
 
                 searchuser: "",
-                message: ""
+                message: "",
+                authuser: "",
+                typing: '',
 
             }
         },
 
         mounted(){
 
+            this.authuser = authuser;  //this auth user from app.blade,php
+
+
             Echo.private(`chat.${authuser.id}`)
                 .listen('MessageSend', (e) => {
                    this.selectUser(e.message.from);
                     /*console.log(e.message.message);*/
                 });
+
+
+            Echo.private('typingevent')
+                .listenForWhisper('typing', (e) => {
+
+                if ((e.user.id == this.userMessage.user.id) /*&& (e.userId == authuser.id)*/) {
+                        this.typing = e.user.name;
+
+                        setTimeout(()=>{
+                        this.typing="";
+                    }, 2000)
+
+                    }
+                
+            });
+
+
 
 
             this.$store.dispatch('userList');
@@ -156,6 +181,17 @@
                     })
                     this.message = "";
                 }
+            },
+
+            typingEvent(userId){
+
+               Echo.private('typingevent')
+                .whisper('typing', {
+                    'user': authuser, //who send msg
+                    'typing' : this.message,
+                    'userId' : userId //who reciev msg 
+
+                });
             }
 
         }

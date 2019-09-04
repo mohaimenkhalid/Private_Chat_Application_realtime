@@ -1789,21 +1789,38 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: 'ChatApp',
   data: function data() {
     return {
       searchuser: "",
-      message: ""
+      message: "",
+      authuser: "",
+      typing: ''
     };
   },
   mounted: function mounted() {
     var _this = this;
 
+    this.authuser = authuser; //this auth user from app.blade,php
+
     Echo["private"]("chat.".concat(authuser.id)).listen('MessageSend', function (e) {
       _this.selectUser(e.message.from);
       /*console.log(e.message.message);*/
 
+    });
+    Echo["private"]('typingevent').listenForWhisper('typing', function (e) {
+      if (e.user.id == _this.userMessage.user.id)
+        /*&& (e.userId == authuser.id)*/
+        {
+          _this.typing = e.user.name;
+          setTimeout(function () {
+            _this.typing = "";
+          }, 2000);
+        }
     });
     this.$store.dispatch('userList');
   },
@@ -1840,6 +1857,15 @@ __webpack_require__.r(__webpack_exports__);
         });
         this.message = "";
       }
+    },
+    typingEvent: function typingEvent(userId) {
+      Echo["private"]('typingevent').whisper('typing', {
+        'user': authuser,
+        //who send msg
+        'typing': this.message,
+        'userId': userId //who reciev msg 
+
+      });
     }
   }
 });
@@ -65127,10 +65153,28 @@ var render = function() {
       _c("div", { staticClass: "row justify-content-center" }, [
         _c("div", { attrs: { id: "frame" } }, [
           _c("div", { attrs: { id: "sidepanel" } }, [
-            _vm._m(0),
+            _c("div", { attrs: { id: "profile" } }, [
+              _c("div", { staticClass: "wrap" }, [
+                _c("img", {
+                  staticClass: "online",
+                  attrs: { id: "profile-img", src: "images/from.png", alt: "" }
+                }),
+                _vm._v(" "),
+                _c("p", [_vm._v(_vm._s(_vm.authuser.name))]),
+                _vm._v(" "),
+                _c("i", {
+                  staticClass: "fa fa-chevron-down expand-button",
+                  attrs: { "aria-hidden": "true" }
+                }),
+                _vm._v(" "),
+                _vm._m(0),
+                _vm._v(" "),
+                _vm._m(1)
+              ])
+            ]),
             _vm._v(" "),
             _c("div", { attrs: { id: "search" } }, [
-              _vm._m(1),
+              _vm._m(2),
               _vm._v(" "),
               _c("input", {
                 directives: [
@@ -65194,7 +65238,7 @@ var render = function() {
               )
             ]),
             _vm._v(" "),
-            _vm._m(2)
+            _vm._m(3)
           ]),
           _vm._v(" "),
           _c("div", { staticClass: "content" }, [
@@ -65205,7 +65249,7 @@ var render = function() {
                 ? _c("p", [_vm._v(_vm._s(_vm.userMessage.user.name))])
                 : _vm._e(),
               _vm._v(" "),
-              _vm._m(3)
+              _vm._m(4)
             ]),
             _vm._v(" "),
             _c(
@@ -65270,43 +65314,130 @@ var render = function() {
             ),
             _vm._v(" "),
             _c("div", { staticClass: "message-input" }, [
-              _c("div", { staticClass: "wrap" }, [
-                _c("input", {
-                  directives: [
+              _vm.typing
+                ? _c(
+                    "p",
                     {
-                      name: "model",
-                      rawName: "v-model",
-                      value: _vm.message,
-                      expression: "message"
-                    }
-                  ],
-                  attrs: { type: "text", placeholder: "Write your message..." },
-                  domProps: { value: _vm.message },
-                  on: {
-                    keydown: function($event) {
-                      if (
-                        !$event.type.indexOf("key") &&
-                        _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")
-                      ) {
-                        return null
+                      staticStyle: {
+                        "text-align": "center",
+                        "margin-bottom": "15px"
                       }
-                      return _vm.sendMessage($event)
                     },
-                    input: function($event) {
-                      if ($event.target.composing) {
-                        return
+                    [
+                      _vm._m(5),
+                      _c("span", [_vm._v(_vm._s(_vm.typing) + " is typing...")])
+                    ]
+                  )
+                : _vm._e(),
+              _vm._v(" "),
+              _c("div", { staticClass: "wrap" }, [
+                _vm.userMessage.user
+                  ? _c("input", {
+                      directives: [
+                        {
+                          name: "model",
+                          rawName: "v-model",
+                          value: _vm.message,
+                          expression: "message"
+                        }
+                      ],
+                      attrs: {
+                        type: "text",
+                        placeholder: "Write your message..."
+                      },
+                      domProps: { value: _vm.message },
+                      on: {
+                        keydown: [
+                          function($event) {
+                            if (
+                              !$event.type.indexOf("key") &&
+                              _vm._k(
+                                $event.keyCode,
+                                "enter",
+                                13,
+                                $event.key,
+                                "Enter"
+                              )
+                            ) {
+                              return null
+                            }
+                            return _vm.sendMessage($event)
+                          },
+                          function($event) {
+                            return _vm.typingEvent(_vm.userMessage.user)
+                          }
+                        ],
+                        input: function($event) {
+                          if ($event.target.composing) {
+                            return
+                          }
+                          _vm.message = $event.target.value
+                        }
                       }
-                      _vm.message = $event.target.value
-                    }
-                  }
-                }),
+                    })
+                  : _c("input", {
+                      directives: [
+                        {
+                          name: "model",
+                          rawName: "v-model",
+                          value: _vm.message,
+                          expression: "message"
+                        }
+                      ],
+                      attrs: {
+                        type: "text",
+                        disabled: "",
+                        placeholder: "Select a user..."
+                      },
+                      domProps: { value: _vm.message },
+                      on: {
+                        keydown: function($event) {
+                          if (
+                            !$event.type.indexOf("key") &&
+                            _vm._k(
+                              $event.keyCode,
+                              "enter",
+                              13,
+                              $event.key,
+                              "Enter"
+                            )
+                          ) {
+                            return null
+                          }
+                          return _vm.sendMessage($event)
+                        },
+                        input: function($event) {
+                          if ($event.target.composing) {
+                            return
+                          }
+                          _vm.message = $event.target.value
+                        }
+                      }
+                    }),
                 _vm._v(" "),
                 _c("i", {
                   staticClass: "fa fa-paperclip attachment",
                   attrs: { "aria-hidden": "true" }
                 }),
                 _vm._v(" "),
-                _vm._m(4)
+                _c(
+                  "button",
+                  {
+                    staticClass: "submit",
+                    on: {
+                      click: function($event) {
+                        $event.preventDefault()
+                        return _vm.sendMessage($event)
+                      }
+                    }
+                  },
+                  [
+                    _c("i", {
+                      staticClass: "fa fa-paper-plane",
+                      attrs: { "aria-hidden": "true" }
+                    })
+                  ]
+                )
               ])
             ])
           ])
@@ -65320,87 +65451,71 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { attrs: { id: "profile" } }, [
-      _c("div", { staticClass: "wrap" }, [
-        _c("img", {
-          staticClass: "online",
-          attrs: { id: "profile-img", src: "images/from.png", alt: "" }
-        }),
-        _vm._v(" "),
-        _c("p", [_vm._v("Mike Ross")]),
-        _vm._v(" "),
-        _c("i", {
-          staticClass: "fa fa-chevron-down expand-button",
-          attrs: { "aria-hidden": "true" }
-        }),
-        _vm._v(" "),
-        _c("div", { attrs: { id: "status-options" } }, [
-          _c("ul", [
-            _c(
-              "li",
-              { staticClass: "active", attrs: { id: "status-online" } },
-              [
-                _c("span", { staticClass: "status-circle" }),
-                _vm._v(" "),
-                _c("p", [_vm._v("Online")])
-              ]
-            ),
-            _vm._v(" "),
-            _c("li", { attrs: { id: "status-away" } }, [
-              _c("span", { staticClass: "status-circle" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Away")])
-            ]),
-            _vm._v(" "),
-            _c("li", { attrs: { id: "status-busy" } }, [
-              _c("span", { staticClass: "status-circle" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Busy")])
-            ]),
-            _vm._v(" "),
-            _c("li", { attrs: { id: "status-offline" } }, [
-              _c("span", { staticClass: "status-circle" }),
-              _vm._v(" "),
-              _c("p", [_vm._v("Offline")])
-            ])
-          ])
+    return _c("div", { attrs: { id: "status-options" } }, [
+      _c("ul", [
+        _c("li", { staticClass: "active", attrs: { id: "status-online" } }, [
+          _c("span", { staticClass: "status-circle" }),
+          _vm._v(" "),
+          _c("p", [_vm._v("Online")])
         ]),
         _vm._v(" "),
-        _c("div", { attrs: { id: "expanded" } }, [
-          _c("label", { attrs: { for: "twitter" } }, [
-            _c("i", {
-              staticClass: "fa fa-facebook fa-fw",
-              attrs: { "aria-hidden": "true" }
-            })
-          ]),
+        _c("li", { attrs: { id: "status-away" } }, [
+          _c("span", { staticClass: "status-circle" }),
           _vm._v(" "),
-          _c("input", {
-            attrs: { name: "twitter", type: "text", value: "mikeross" }
-          }),
+          _c("p", [_vm._v("Away")])
+        ]),
+        _vm._v(" "),
+        _c("li", { attrs: { id: "status-busy" } }, [
+          _c("span", { staticClass: "status-circle" }),
           _vm._v(" "),
-          _c("label", { attrs: { for: "twitter" } }, [
-            _c("i", {
-              staticClass: "fa fa-twitter fa-fw",
-              attrs: { "aria-hidden": "true" }
-            })
-          ]),
+          _c("p", [_vm._v("Busy")])
+        ]),
+        _vm._v(" "),
+        _c("li", { attrs: { id: "status-offline" } }, [
+          _c("span", { staticClass: "status-circle" }),
           _vm._v(" "),
-          _c("input", {
-            attrs: { name: "twitter", type: "text", value: "ross81" }
-          }),
-          _vm._v(" "),
-          _c("label", { attrs: { for: "twitter" } }, [
-            _c("i", {
-              staticClass: "fa fa-instagram fa-fw",
-              attrs: { "aria-hidden": "true" }
-            })
-          ]),
-          _vm._v(" "),
-          _c("input", {
-            attrs: { name: "twitter", type: "text", value: "mike.ross" }
-          })
+          _c("p", [_vm._v("Offline")])
         ])
       ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { attrs: { id: "expanded" } }, [
+      _c("label", { attrs: { for: "twitter" } }, [
+        _c("i", {
+          staticClass: "fa fa-facebook fa-fw",
+          attrs: { "aria-hidden": "true" }
+        })
+      ]),
+      _vm._v(" "),
+      _c("input", {
+        attrs: { name: "twitter", type: "text", value: "mikeross" }
+      }),
+      _vm._v(" "),
+      _c("label", { attrs: { for: "twitter" } }, [
+        _c("i", {
+          staticClass: "fa fa-twitter fa-fw",
+          attrs: { "aria-hidden": "true" }
+        })
+      ]),
+      _vm._v(" "),
+      _c("input", {
+        attrs: { name: "twitter", type: "text", value: "ross81" }
+      }),
+      _vm._v(" "),
+      _c("label", { attrs: { for: "twitter" } }, [
+        _c("i", {
+          staticClass: "fa fa-instagram fa-fw",
+          attrs: { "aria-hidden": "true" }
+        })
+      ]),
+      _vm._v(" "),
+      _c("input", {
+        attrs: { name: "twitter", type: "text", value: "mike.ross" }
+      })
     ])
   },
   function() {
@@ -65460,11 +65575,8 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("button", { staticClass: "submit" }, [
-      _c("i", {
-        staticClass: "fa fa-paper-plane",
-        attrs: { "aria-hidden": "true" }
-      })
+    return _c("span", [
+      _c("img", { attrs: { width: "25", src: "images/typing.gif" } })
     ])
   }
 ]
