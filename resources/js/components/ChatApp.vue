@@ -140,7 +140,7 @@
 
                         setTimeout(()=>{
                         this.typing="";
-                    }, 2000)
+                    }, 10000)
 
                     }
                 

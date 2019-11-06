@@ -1830,7 +1830,7 @@ __webpack_require__.r(__webpack_exports__);
           _this.typing = e.user.name;
           setTimeout(function () {
             _this.typing = "";
-          }, 2000);
+          }, 10000);
         }
     });
     Echo.join('liveuser').here(function (users) {
